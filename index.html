@@ -21,6 +21,45 @@
   --fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;--fm:'JetBrains Mono',monospace;
   --r:11px;--rl:17px;--rx:22px;
 }
+/* ── LIGHT MODE ── */
+html.light{
+  --gold:#a07c10;--gd:rgba(160,124,16,.1);--gg:rgba(160,124,16,.22);
+  --teal:#0d9488;--td:rgba(13,148,136,.1);
+  --violet:#7c3aed;--vd:rgba(124,58,237,.1);
+  --coral:#dc2626;--cod:rgba(220,38,38,.09);
+  --green:#16a34a;--grd:rgba(22,163,74,.1);
+  --rose:#e11d48;--blue:#2563eb;--amber:#d97706;--sky:#0284c7;
+  --bg0:#f1f3f9;--bg2:#ffffff;--bg3:#f8f9fc;--bg4:#edf0f7;--bg5:#e4e8f3;
+  --gl:rgba(255,255,255,.9);--gl2:rgba(248,249,252,.92);
+  --b1:rgba(0,0,0,.08);--b2:rgba(0,0,0,.15);
+  --t0:#0f1120;--t1:#2d3258;--t2:#6b7299;--t3:#a8afc9;
+}
+html.light body::before{background-image:linear-gradient(rgba(160,124,16,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(160,124,16,.025) 1px,transparent 1px);}
+html.light body::after{background:radial-gradient(ellipse,rgba(160,124,16,.06) 0%,rgba(13,148,136,.025) 45%,transparent 70%);}
+html.light .wsbar{background:rgba(241,243,249,.97);}
+html.light .ws-logo{background:linear-gradient(135deg,var(--gold),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+html.light .fi,html.light .fta,html.light .fsel{background:#fff;color:var(--t0);}
+html.light .ts{background:var(--bg4);}
+html.light .ac{background:var(--bg4);}
+html.light .ps{background:var(--bg4);}
+html.light .dbody{background:var(--bg4);}
+html.light .del-col{background:var(--bg4);}
+html.light .del-item{background:#fff;}
+html.light .pl-item{background:var(--bg4);}
+html.light .wiz-box{background:var(--bg2);}
+html.light .md{background:var(--bg2);}
+html.light .splash-box .feat-card{background:var(--bg4);}
+html.light .how-step{background:var(--bg4);}
+html.light .chip{background:var(--bg4);color:var(--t2);}
+html.light .btn{background:var(--bg4);color:var(--t1);}
+html.light .btn:hover{background:var(--bg5);}
+html.light .alert.info{background:rgba(13,148,136,.08);}
+html.light .alert.warn{background:rgba(217,119,6,.08);}
+html.light .alert.success{background:rgba(22,163,74,.08);}
+html.light .alert.error{background:rgba(220,38,38,.08);}
+/* smooth transition */
+body,body::before,body::after,.wsbar,.sb,.main,.topbar,.gc,.md,.wiz-box,.btn,.chip,.fi,.fta,.fsel,.ac,.ps,.del-col,.del-item,.pl-item,.ts,.dbody{transition:background .22s,border-color .22s,color .15s;}
+
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow:hidden;}
 body{font-family:var(--fb);background:var(--bg0);color:var(--t0);}
@@ -695,6 +734,7 @@ body::after{content:'';position:fixed;top:-25vh;left:50%;transform:translateX(-5
     <button class="tab" onclick="stab(this,'s-apps')">Connected Apps</button>
     <button class="tab" onclick="stab(this,'s-urls')">URL Sources</button>
     <button class="tab" onclick="stab(this,'s-voice')">Voice & Tone</button>
+    <button class="tab" onclick="stab(this,'s-appear')">Appearance</button>
   </div>
 
   <!-- API KEYS -->
@@ -846,6 +886,45 @@ body::after{content:'';position:fixed;top:-25vh;left:50%;transform:translateX(-5
         <div style="display:flex;gap:8px;">
           <button class="btn teal" onclick="addAndFetchURL()">Fetch &amp; Index Now</button>
           <button class="btn" onclick="addURLSource()">Add to List (fetch later)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPEARANCE -->
+  <div id="s-appear" style="display:none;">
+    <div class="set-section">
+      <div class="set-sec-title"><span class="sec-ico">🎨</span>Appearance</div>
+      <div style="font-size:11px;color:var(--t2);margin-bottom:18px;">Choose between dark luxury and clean light mode. Preference is saved per-browser.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div id="theme-dark-card" onclick="setTheme('dark')" style="padding:20px;border-radius:var(--rl);cursor:pointer;border:2px solid rgba(201,162,39,.5);background:linear-gradient(135deg,#060810,#0e1020);text-align:center;transition:all .2s;">
+          <div style="font-size:26px;margin-bottom:8px;">🌙</div>
+          <div style="font-family:var(--fh);font-size:13px;font-weight:700;color:#f0f0f8;margin-bottom:4px;">Dark Mode</div>
+          <div style="font-size:10px;color:#6b6f8a;">Gold &amp; teal on deep navy. The default.</div>
+          <div style="margin-top:10px;display:flex;gap:5px;justify-content:center;">
+            <div style="width:14px;height:14px;border-radius:3px;background:#c9a227;"></div>
+            <div style="width:14px;height:14px;border-radius:3px;background:#2dd4bf;"></div>
+            <div style="width:14px;height:14px;border-radius:3px;background:#a78bfa;"></div>
+            <div style="width:14px;height:14px;border-radius:3px;background:#060810;border:1px solid #3a3e56;"></div>
+          </div>
+        </div>
+        <div id="theme-light-card" onclick="setTheme('light')" style="padding:20px;border-radius:var(--rl);cursor:pointer;border:2px solid var(--b1);background:linear-gradient(135deg,#f1f3f9,#ffffff);text-align:center;transition:all .2s;">
+          <div style="font-size:26px;margin-bottom:8px;">☀️</div>
+          <div style="font-family:var(--fh);font-size:13px;font-weight:700;color:#0f1120;margin-bottom:4px;">Light Mode</div>
+          <div style="font-size:10px;color:#6b7299;">Clean white. Easier in bright environments.</div>
+          <div style="margin-top:10px;display:flex;gap:5px;justify-content:center;">
+            <div style="width:14px;height:14px;border-radius:3px;background:#a07c10;"></div>
+            <div style="width:14px;height:14px;border-radius:3px;background:#0d9488;"></div>
+            <div style="width:14px;height:14px;border-radius:3px;background:#7c3aed;"></div>
+            <div style="width:14px;height:14px;border-radius:3px;background:#f1f3f9;border:1px solid #a8afc9;"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg3);border:1px solid var(--b1);border-radius:var(--r);">
+        <span style="font-size:13px;" id="theme-current-ico">🌙</span>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--t0);" id="theme-current-lbl">Dark Mode Active</div>
+          <div style="font-size:10px;color:var(--t2);">Click either card above to switch instantly. No reload needed.</div>
         </div>
       </div>
     </div>
@@ -1865,7 +1944,24 @@ async function testConfig(){
 function V(v,el){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const vEl=document.getElementById('view-'+v);if(vEl)vEl.classList.add('active');document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));if(el)el.classList.add('active');const T={warroom:'⚡ War Room',workflows:'🔀 Workflows',social:'📣 Social Engine',outreach:'✉️ Outreach Builder',deliverables:'📋 Deliverables',grants:'💰 Live Grants',mail:'📬 Mail Hub',kb:'📚 Knowledge Base',hiring:'🤖 Hiring Hall',memory:'🧠 Long-Term Brain',prompts:'📝 Prompt Library',registry:'🗄 Task Registry',export:'📄 PDF Export'};document.getElementById('page-title').textContent=T[v]||v;}
 function openM(id){document.getElementById('mo-'+id)?.classList.add('open');}
 function closeM(id,e){if(!e||e.target===document.getElementById('mo-'+id))document.getElementById('mo-'+id)?.classList.remove('open');}
-function stab(btn,p){document.querySelectorAll('#mo-settings .tab').forEach(t=>t.classList.remove('active'));btn?.classList.add('active');['s-api','s-company','s-social','s-audiences','s-apps','s-urls','s-voice'].forEach(x=>document.getElementById(x).style.display=x===p?'':'none');}
+function stab(btn,p){document.querySelectorAll('#mo-settings .tab').forEach(t=>t.classList.remove('active'));btn?.classList.add('active');['s-api','s-company','s-social','s-audiences','s-apps','s-urls','s-voice','s-appear'].forEach(x=>{const el=document.getElementById(x);if(el)el.style.display=x===p?'':'none';});}
+
+function setTheme(mode){
+  localStorage.setItem('fiq5_theme',mode);
+  applyTheme(mode);
+}
+function applyTheme(mode){
+  const isLight=mode==='light';
+  document.documentElement.classList.toggle('light',isLight);
+  // update cards
+  const dk=document.getElementById('theme-dark-card');const lk=document.getElementById('theme-light-card');
+  if(dk)dk.style.borderColor=isLight?'var(--b1)':'rgba(201,162,39,.5)';
+  if(lk)lk.style.borderColor=isLight?'rgba(13,148,136,.5)':'var(--b1)';
+  const ico=document.getElementById('theme-current-ico');const lbl=document.getElementById('theme-current-lbl');
+  if(ico)ico.textContent=isLight?'☀️':'🌙';
+  if(lbl)lbl.textContent=isLight?'Light Mode Active':'Dark Mode Active';
+  toast(isLight?'☀️':'🌙',isLight?'Light mode on':'Dark mode on');
+}
 function toggleTS(card){card.querySelector('.ts').classList.toggle('open');}
 function cpText(elId,fallback){const t=fallback||document.getElementById(elId)?.textContent;if(t)navigator.clipboard.writeText(t).then(()=>toast('📋','Copied'));}
 function dlJSON(data,fn){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download=fn;a.click();}
@@ -1877,6 +1973,9 @@ function toast(icon,msg){document.getElementById('ti').textContent=icon;document
 // BOOT
 // ════════════════════════════════════════════════════
 function boot(){
+  // Apply saved theme immediately
+  const savedTheme=localStorage.getItem('fiq5_theme')||'dark';
+  applyTheme(savedTheme);
   document.getElementById('pdf-date').textContent='Prepared '+new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
   let ws=getWS();
   if(!ws.length){const id='ws_'+Date.now();ws=[{id,name:'My Workspace',created:new Date().toISOString()}];setWS(ws);CWS=id;setActiveWS(id);}
