@@ -534,6 +534,7 @@ body::after{content:'';position:fixed;top:-25vh;left:50%;transform:translateX(-5
     <div class="sb-prog">
       <div class="sb-pbar"><div class="sb-pfill" id="sb-pfill" style="width:0%"></div></div>
       <div class="sb-plbl" id="sb-plbl">Setup 0% complete</div>
+      <div id="sb-next-action" style="display:none;margin-top:5px;font-size:9.5px;color:var(--teal);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;font-family:var(--fm);" onclick="execNextAction()"></div>
     </div>
   </div>
   <div class="nav">
@@ -545,6 +546,7 @@ body::after{content:'';position:fixed;top:-25vh;left:50%;transform:translateX(-5
     <div class="ni" onclick="V('deliverables',this)"><span class="ni-i">📋</span>Deliverables <span class="nb nb-d" id="nb-del">0</span></div>
     <div class="ns">Intelligence</div>
     <div class="ni" onclick="V('grants',this)"><span class="ni-i">🔭</span>Intel Hub <span class="nb nb-t" id="nb-gr">0</span></div>
+    <div class="ni" onclick="V('bizhealth',this)"><span class="ni-i">🏥</span>Biz Health</div>
     <div class="ni" onclick="V('mail',this)"><span class="ni-i">📬</span>Mail Hub <span class="nb nb-c" id="nb-mail">0</span></div>
     <div class="ni" onclick="V('kb',this)"><span class="ni-i">📚</span>Knowledge Base <span class="nb nb-gr" id="nb-kb">0</span></div>
     <div class="ns">Workforce</div>
@@ -579,6 +581,7 @@ body::after{content:'';position:fixed;top:-25vh;left:50%;transform:translateX(-5
     <div class="tp-r">
       <button class="btn" onclick="openM('new-agent')">+ Hire Agent</button>
       <button class="btn sky" onclick="openWiz('setup')">🧙 Setup Wizard</button>
+      <button class="btn violet" id="launchpad-btn" onclick="openLaunchPad()" style="display:none;">🚀 Launch Pad</button>
       <button class="btn coral" onclick="openM('fix-this')">🔧 Fix This</button>
       <button class="btn gold" onclick="V('workflows',document.querySelector('[onclick*=workflows]'))">🔀 Workflows</button>
     </div>
@@ -591,6 +594,12 @@ body::after{content:'';position:fixed;top:-25vh;left:50%;transform:translateX(-5
       <div class="url-trigger-banner" id="url-trigger-banner"><span style="font-size:16px;">🔗</span><div><strong style="color:var(--teal);">URL Trigger Active</strong> — <span id="url-trigger-msg"></span></div></div>
       <div class="page-desc">Your command center — run any workflow, watch agents think in real time, and read the latest crew output. Everything starts here.</div>
       <div id="cfg-alert" class="alert warn" style="display:none;">⚠️ Groq API key not configured. Go to ⚙️ Settings → API Keys to add it before running any workflows.</div>
+      <div id="reminder-banner" style="display:none;margin-bottom:12px;padding:10px 14px;background:rgba(45,212,191,.08);border:1px solid rgba(45,212,191,.3);border-radius:var(--r);display:none;align-items:center;gap:10px;">
+        <span style="font-size:16px;">📅</span>
+        <div style="flex:1;font-size:11px;color:var(--teal);" id="reminder-msg"></div>
+        <button class="btn teal" style="font-size:10px;padding:4px 10px;" id="reminder-run-btn" onclick="runReminderWorkflow()">Run Now</button>
+        <button class="ico-btn" onclick="dismissReminder()" title="Dismiss">✕</button>
+      </div>
       <div class="sr sr5 mb">
         <div class="sc gold"><div class="sl">Agents</div><div class="sv" style="color:var(--gold)" id="s-ag">0</div><div class="ss">deployed</div></div>
         <div class="sc teal"><div class="sl">Live Grants</div><div class="sv" style="color:var(--teal)" id="s-gr">0</div><div class="ss">from API</div></div>
@@ -1116,9 +1125,85 @@ body::after{content:'';position:fixed;top:-25vh;left:50%;transform:translateX(-5
           <option value="Outreach">Outreach</option>
           <option value="Fix">Fixes</option>
           <option value="Mail">Mail</option>
+          <option value="Business Plan">Business Plans</option>
+          <option value="Health Audit">Health Audits</option>
         </select>
       </div>
+      <div id="vault-tag-cloud" style="display:none;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px;padding:8px 0;"></div>
+      <input type="hidden" id="vault-tag-filter" value="">
       <div id="vault-list"></div>
+    </div>
+
+    <!-- BUSINESS HEALTH -->
+    <div class="view" id="view-bizhealth">
+      <div class="page-desc">Audit your mature business — scrape your site, check brand consistency, scan for operational gaps, and get a prioritized action list. Run fresh anytime.</div>
+      <div class="tabs">
+        <button class="tab active" onclick="bhTab(this,'bh-dash')">📊 Dashboard</button>
+        <button class="tab" onclick="bhTab(this,'bh-run')">▶ Run Audit</button>
+        <button class="tab" onclick="bhTab(this,'bh-history')">📁 History</button>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="tc active" id="tc-bh-dash">
+        <div id="bh-dashboard-empty" style="text-align:center;padding:48px 20px;">
+          <div style="font-size:40px;margin-bottom:12px;">🏥</div>
+          <div style="font-family:var(--fh);font-size:15px;font-weight:700;margin-bottom:8px;">No Audit Run Yet</div>
+          <div style="font-size:11px;color:var(--t2);margin-bottom:18px;line-height:1.6;max-width:340px;margin-left:auto;margin-right:auto;">Run your first Business Health Audit to see your brand consistency score, operational gaps, and priority recommendations.</div>
+          <button class="btn gold" onclick="bhTab(document.querySelectorAll('#view-bizhealth .tab')[1],'bh-run')">▶ Run First Audit →</button>
+        </div>
+        <div id="bh-dashboard-results" style="display:none;"></div>
+      </div>
+
+      <!-- RUN AUDIT -->
+      <div class="tc" id="tc-bh-run">
+        <div class="g2">
+          <div>
+            <div class="sh"><span class="stt">Intake — Existing Business</span></div>
+            <div class="gc mb">
+              <div class="fg"><label class="fl">Company Website URL <span style="color:var(--t3);text-transform:none;font-size:9px;">(optional — we'll scrape it)</span></label>
+                <div style="display:flex;gap:7px;">
+                  <input class="fi" id="bh-url" placeholder="https://yoursite.com" style="flex:1;">
+                  <button class="btn teal" onclick="bhScrapeURL()">Fetch</button>
+                </div>
+                <div id="bh-scrape-status" style="font-size:10px;color:var(--teal);margin-top:4px;"></div>
+              </div>
+              <div class="fg"><label class="fl">Existing Docs / About Us / Bio</label>
+                <textarea class="fta" id="bh-docs" style="min-height:80px;" placeholder="Paste your about page, bio, existing mission statement, or any background text…"></textarea>
+              </div>
+              <div class="fg"><label class="fl">Competitors (up to 3, comma separated)</label>
+                <input class="fi" id="bh-competitors" placeholder="e.g. Competitor A, Competitor B, Competitor C">
+              </div>
+              <div class="fg"><label class="fl">Business History / Key Context</label>
+                <textarea class="fta" id="bh-history-ctx" style="min-height:65px;" placeholder="How long in business, major milestones, biggest challenges, current goals…"></textarea>
+              </div>
+            </div>
+            <button class="run-btn" onclick="runBizHealthAudit()">🏥 Run Full Health Audit</button>
+          </div>
+          <div class="col">
+            <div class="gc">
+              <div class="ct" style="margin-bottom:8px;">What gets audited</div>
+              <div style="font-size:11px;color:var(--t2);line-height:1.8;">
+                <div>✦ <strong style="color:var(--gold);">Brand & Content</strong> — voice consistency, messaging clarity</div>
+                <div>✦ <strong style="color:var(--teal);">Mission Alignment</strong> — do your actions match your stated purpose</div>
+                <div>✦ <strong style="color:var(--violet);">Competitive Position</strong> — where you stand vs named competitors</div>
+                <div>✦ <strong style="color:var(--coral);">Operational Gaps</strong> — what's missing for the next phase</div>
+                <div>✦ <strong style="color:var(--green);">Priority Actions</strong> — ranked, specific next steps</div>
+              </div>
+            </div>
+            <div class="gc">
+              <div class="ct" style="margin-bottom:8px;">💡 Tips</div>
+              <div style="font-size:11px;color:var(--t2);line-height:1.65;">The more context you give, the more specific the audit. Paste your full About page if you have it. Competitor names alone are enough — the agents do the analysis from your context.</div>
+            </div>
+          </div>
+        </div>
+        <div id="bh-run-output" style="display:none;margin-top:14px;"></div>
+      </div>
+
+      <!-- HISTORY -->
+      <div class="tc" id="tc-bh-history">
+        <div class="sh"><span class="stt">Past Audits</span></div>
+        <div id="bh-history-list"></div>
+      </div>
     </div>
 
     <!-- PDF EXPORT -->
@@ -1152,6 +1237,7 @@ body::after{content:'';position:fixed;top:-25vh;left:50%;transform:translateX(-5
     <button class="tab" onclick="stab(this,'s-urls')">URL Sources</button>
     <button class="tab" onclick="stab(this,'s-voice')">Voice & Tone</button>
     <button class="tab" onclick="stab(this,'s-appear')">Appearance</button>
+    <button class="tab" onclick="stab(this,'s-remind')">⏰ Reminders</button>
   </div>
 
   <!-- API KEYS -->
@@ -1374,6 +1460,31 @@ body::after{content:'';position:fixed;top:-25vh;left:50%;transform:translateX(-5
     </div>
   </div>
 
+  <!-- REMINDERS -->
+  <div id="s-remind" style="display:none;">
+    <div class="set-section">
+      <div class="set-sec-title"><span class="sec-ico">⏰</span>Scheduled Reminders</div>
+      <div style="font-size:11px;color:var(--t2);margin-bottom:14px;line-height:1.6;">Set workflow reminders that appear as a banner in the War Room when they're due. Checked every time you open the app — no server needed.</div>
+      <div id="remind-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+      <div class="gc" style="padding:14px;">
+        <div style="font-size:10px;font-weight:600;color:var(--t1);margin-bottom:10px;">+ Add Reminder</div>
+        <div class="g2" style="gap:10px;margin-bottom:8px;">
+          <div class="fg" style="margin-bottom:0;"><label class="fl">Workflow</label><select class="fsel" id="rem-wf-sel"></select></div>
+          <div class="fg" style="margin-bottom:0;"><label class="fl">Repeat Every</label>
+            <select class="fsel" id="rem-interval">
+              <option value="1">Daily</option>
+              <option value="7" selected>Weekly</option>
+              <option value="14">Every 2 Weeks</option>
+              <option value="30">Monthly</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg"><label class="fl">Reminder Label</label><input class="fi" id="rem-label" placeholder="e.g. Weekly Review is due"></div>
+        <button class="btn gold" onclick="addReminder()">+ Add Reminder</button>
+      </div>
+    </div>
+  </div>
+
   <div class="divider"></div>
   <div style="display:flex;gap:8px;justify-content:flex-end;">
     <button class="btn gold" onclick="saveConfig();closeM('settings')">Save All &amp; Close</button>
@@ -1554,6 +1665,33 @@ body::after{content:'';position:fixed;top:-25vh;left:50%;transform:translateX(-5
     <button class="ico-btn" onclick="closeM('wf-run')">✕</button>
   </div>
   <div id="wfr-steps" style="margin-bottom:14px;"></div>
+  <!-- Business Plan config — shown only for that workflow -->
+  <div id="biz-plan-config" style="display:none;margin-bottom:14px;padding:12px 14px;background:var(--td);border:1px solid rgba(45,212,191,.25);border-radius:var(--r);">
+    <div style="font-size:10px;font-weight:600;color:var(--teal);margin-bottom:10px;">📋 Business Plan Configuration</div>
+    <div class="g2" style="gap:10px;">
+      <div class="fg" style="margin-bottom:0;"><label class="fl">Industry</label>
+        <select class="fsel" id="bp-industry">
+          <option value="nonprofit">Nonprofit / Social Impact</option>
+          <option value="tech">Technology / SaaS</option>
+          <option value="health">Healthcare / MedTech</option>
+          <option value="services">Professional Services</option>
+          <option value="retail">Retail / E-commerce</option>
+          <option value="realestate">Real Estate</option>
+          <option value="food">Food & Beverage</option>
+          <option value="education">Education / EdTech</option>
+          <option value="construction">Construction / Trades</option>
+          <option value="media">Media / Creative</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="fg" style="margin-bottom:0;"><label class="fl">State / Region</label>
+        <select class="fsel" id="bp-state">
+          <option value="">Use company setting</option>
+          <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option><option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option><option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option>
+        </select>
+      </div>
+    </div>
+  </div>
   <div class="fg"><label class="fl">Extra Context (optional)</label><textarea class="fta" id="wfr-ctx" style="min-height:55px;" placeholder="Add specifics — names, dates, focus area…"></textarea></div>
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
     <input type="checkbox" id="wfr-snapshot" checked style="accent-color:var(--gold);">
@@ -1795,6 +1933,7 @@ function loadWSData(){
   renderSocialPlatformChecks();renderOutreachAudSelect();renderAudPreview();renderAudListSettings();renderAppsListSettings();renderURLSourcesList();
   renderDeptList();renderSnapshots();renderVault();
   renderCustomPlatList();
+  renderReminderList();
   // Override renderKB with enhanced version after load
   window.renderKB=renderKBWithTags;
   populateDeptSelects();
@@ -1875,6 +2014,17 @@ function updateSidebar(){
   document.getElementById('cfg-alert').style.display=CFG.groq?'none':'block';
 }
 
+const NEXT_ACTIONS=[
+  {check:()=>!CFG.groq,   label:'→ Add Groq API key',   fn:()=>{openM('settings');stab(document.querySelector('#mo-settings .tab'),'s-api');}},
+  {check:()=>!CFG.org,    label:'→ Name your company',  fn:()=>{openM('settings');stab(document.querySelectorAll('#mo-settings .tab')[1],'s-company');}},
+  {check:()=>!CFG.mission,label:'→ Write your mission', fn:()=>{openM('settings');stab(document.querySelectorAll('#mo-settings .tab')[1],'s-company');}},
+  {check:()=>!CFG.voice,  label:'→ Set voice & tone',   fn:()=>{openM('settings');stab(document.querySelectorAll('#mo-settings .tab')[6],'s-voice');}},
+  {check:()=>!AGENTS.length,label:'→ Hire your first agent',fn:()=>openM('new-agent')},
+  {check:()=>!KB.length,  label:'→ Add a KB source',    fn:()=>openM('add-kb')},
+  {check:()=>!AUDIENCES.length&&!Object.keys(PLATFORMS).filter(p=>PLATFORMS[p]?.on).length,label:'→ Define a target audience',fn:()=>{openM('settings');stab(document.querySelectorAll('#mo-settings .tab')[3],'s-audiences');}},
+];
+let _nextActionFn=null;
+function execNextAction(){if(_nextActionFn)_nextActionFn();}
 function updateCompletion(){
   let score=0,max=7;
   if(CFG.org)score++;if(CFG.mission)score++;if(CFG.groq)score++;
@@ -1883,6 +2033,13 @@ function updateCompletion(){
   const pct=Math.round(score/max*100);
   document.getElementById('sb-pfill').style.width=pct+'%';
   document.getElementById('sb-plbl').textContent=`Setup ${pct}% complete`;
+  const naEl=document.getElementById('sb-next-action');
+  const lpBtn=document.getElementById('launchpad-btn');
+  if(pct>=100){naEl.style.display='none';_nextActionFn=null;if(lpBtn)lpBtn.style.display='none';return;}
+  if(lpBtn)lpBtn.style.display=pct<30?'':'none';
+  const next=NEXT_ACTIONS.find(a=>a.check());
+  if(next){naEl.style.display='block';naEl.textContent=next.label;_nextActionFn=next.fn;}
+  else{naEl.style.display='none';_nextActionFn=null;}
 }
 
 function updateBadges(){
@@ -1923,32 +2080,64 @@ function toggleSidebar(){
 let VAULT=[]; // [{id,ts,type,title,content,tags:[]}]
 
 function vaultPush(title,content,type,tags){
-  VAULT.unshift({id:'v'+Date.now(),ts:new Date().toISOString(),type:type||'Output',title,content,tags:tags||[]});
+  const item={id:'v'+Date.now(),ts:new Date().toISOString(),type:type||'Output',title,content,tags:tags||[],campaignTags:[],tagReason:''};
+  VAULT.unshift(item);
   if(VAULT.length>200)VAULT.splice(200);
   ST.set('vault',VAULT);
   updateBadges();
   renderVault();
+  // AI auto-tag in background
+  if(CFG.groq)autoTagVaultItem(item.id,title,content);
+}
+
+async function autoTagVaultItem(itemId,title,content){
+  const sys='You are a content tagger. Given a title and content snippet, return ONLY a JSON object with two keys: "tags" (array of 1-3 short campaign/topic tags, e.g. "Grant Cycle Q3", "Brand Refresh", "Product Launch") and "reason" (one sentence explaining the tags). No markdown, no extra text.';
+  const snippet=(title+' '+content).substring(0,400);
+  const{text}=await groq(sys,'Tag this output:\n'+snippet,120);
+  try{
+    const d=JSON.parse(text.replace(/```json|```/g,'').trim());
+    const idx=VAULT.findIndex(v=>v.id===itemId);
+    if(idx>=0&&d.tags){VAULT[idx].campaignTags=d.tags;VAULT[idx].tagReason=d.reason||'';ST.set('vault',VAULT);renderVault();}
+  }catch{}
 }
 
 function renderVault(query){
   const el=document.getElementById('vault-list');if(!el)return;
   const q=(query||document.querySelector('#view-vault .fi')?.value||'').toLowerCase();
   const typeF=document.getElementById('vault-type-filter')?.value||'';
+  const tagF=document.getElementById('vault-tag-filter')?.value||'';
   let items=VAULT;
-  if(q)items=items.filter(v=>(v.title+' '+v.content+' '+(v.tags||[]).join(' ')).toLowerCase().includes(q));
+  if(q)items=items.filter(v=>(v.title+' '+v.content+' '+(v.tags||[]).join(' ')+' '+(v.campaignTags||[]).join(' ')).toLowerCase().includes(q));
   if(typeF)items=items.filter(v=>v.type===typeF);
+  if(tagF)items=items.filter(v=>(v.campaignTags||[]).some(t=>t===tagF));
+  // Render tag cloud
+  const tagCloud=document.getElementById('vault-tag-cloud');
+  if(tagCloud){
+    const allTags=[...new Set(VAULT.flatMap(v=>v.campaignTags||[]))];
+    if(allTags.length){
+      tagCloud.style.display='flex';
+      tagCloud.innerHTML='<span style="font-size:9px;color:var(--t2);margin-right:4px;font-family:var(--fm);">Tags:</span>'+allTags.map(t=>`<span class="chip${tagF===t?' teal':''}" style="cursor:pointer;font-size:9px;" onclick="document.getElementById('vault-tag-filter').value=document.getElementById('vault-tag-filter').value==='${escHtml(t)}'?'':'${escHtml(t)}';renderVault();">${escHtml(t)}</span>`).join('');
+    } else {tagCloud.style.display='none';}
+  }
   if(!items.length){
     el.innerHTML='<div style="text-align:center;padding:32px;font-size:11px;color:var(--t2);">'+(VAULT.length?'No results matching your search.':'No outputs yet. Run a workflow or generate content — everything lands here automatically.')+'</div>';
     return;
   }
-  const TYPE_COLORS={Pipeline:'gold',Social:'teal',Outreach:'violet',Fix:'coral',Mail:'sky',Output:'t2'};
-  el.innerHTML=items.map((v,i)=>`
-    <div class="vault-item" id="vi-${v.id}" onclick="toggleVaultItem('${v.id}')">
+  const TYPE_COLORS={Pipeline:'gold',Social:'teal',Outreach:'violet',Fix:'coral',Mail:'sky',Output:'t2','Business Plan':'violet','Health Audit':'green'};
+  el.innerHTML=items.map((v,i)=>{
+    const ctags=(v.campaignTags||[]);
+    const tagHtml=ctags.length?`<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:5px;">
+      <span class="chip" style="font-size:8px;background:rgba(45,212,191,.08);border-color:rgba(45,212,191,.2);color:var(--teal);">🏷 AI Tagged</span>
+      ${ctags.map(t=>`<span class="chip teal" style="font-size:8.5px;">${escHtml(t)}</span>`).join('')}
+      ${v.tagReason?`<button class="ico-btn" style="font-size:9px;width:18px;height:18px;" title="${escHtml(v.tagReason)}" onclick="event.stopPropagation();toast('🏷','${escHtml(v.tagReason.substring(0,80))}')">?</button>`:''}
+    </div>`:'';
+    return`<div class="vault-item" id="vi-${v.id}" onclick="toggleVaultItem('${v.id}')">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
         <div style="flex:1;min-width:0;">
           <div style="font-size:12px;font-weight:600;color:var(--t0);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(v.title)}</div>
           <div style="font-size:10px;color:var(--t2);font-family:var(--fm);">${new Date(v.ts).toLocaleString()}</div>
           <div style="font-size:10.5px;color:var(--t2);margin-top:4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" id="vi-preview-${v.id}">${escHtml((v.content||'').substring(0,120))}…</div>
+          ${tagHtml}
         </div>
         <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
           <span class="vault-tag" style="background:var(--${TYPE_COLORS[v.type]||'t3'}d,rgba(255,255,255,.05));color:var(--${TYPE_COLORS[v.type]||'t2'});border:1px solid rgba(255,255,255,.08);">${v.type}</span>
@@ -1963,7 +2152,8 @@ function renderVault(query){
           <button class="btn gold" style="font-size:10px;" onclick="event.stopPropagation();navigator.clipboard.writeText(${JSON.stringify(v.content)}).then(()=>toast('📋','Copied full output'))">Copy All</button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function toggleVaultItem(id){
@@ -2058,6 +2248,15 @@ const BASE_WORKFLOWS={
   'brand-content-batch':{name:'Brand Content Batch',icon:'📣',desc:'Brand story → Social posts → Email newsletter intro',steps:[{label:'Brand Story Draft',sys:"Write a compelling 100-word brand story for this organization. Focus on the human impact and the founder's motivation."},{label:'Social Post Set',sys:"Using the brand story context, draft 3 social posts: one for LinkedIn (professional, 2 paragraphs), one for Instagram/Facebook (emotional, shorter), one for Twitter/X (punchy, under 200 chars). Label each clearly."},{label:'Newsletter Intro',sys:"Draft a 60-word email newsletter intro that continues the brand story theme and encourages readers to learn more."}]},
   'outreach-strategy':{name:'Outreach Strategy',icon:'✉️',desc:'Audience analysis → Email sequence → Follow-up plan',steps:[{label:'Audience Analysis',sys:"Analyze the target audiences configured for this organization. Which audience segment should be prioritized first and why? What do they care about most?"},{label:'Cold Outreach Email',sys:"Using the audience analysis, draft a warm cold outreach email under 120 words. Use the founder's voice. No corporate language."},{label:'Follow-up Sequence',sys:"Draft a 2-email follow-up sequence (Day 3 and Day 7) that assumes no response to the first email. Keep each under 80 words."}]},
   'weekly-review':{name:'Weekly Review',icon:'📊',desc:'Progress summary → Next actions → Priorities',steps:[{label:'Progress This Week',sys:"Based on the task registry and current deliverables context, summarize what was accomplished this week for this organization."},{label:'Blockers & Gaps',sys:"Identify 3 potential blockers or gaps based on the organization's current phase and goals."},{label:'Top 5 Priorities Next Week',sys:"List the 5 highest-priority actions for next week, ordered by impact. Be specific."}]},
+  'business-plan':{name:'Business Plan Generator',icon:'📋',desc:'Full business plan: market, competitive, GTM, financials, 90-day actions',steps:[
+    {label:'Industry & Market Context',sys:'You are a market research analyst. Describe the current state of this industry, key market trends, estimated market size, and the opportunity this organization is positioned to capture. Be specific to the industry and state provided. Use clear headers and bullet points.'},
+    {label:'Problem & Solution Definition',sys:'You are a business strategist. Clearly articulate: (1) The specific problem this organization solves, (2) Who suffers most from this problem, (3) Why existing solutions fall short, (4) How this organization\'s approach is different and better. Use bullet points.'},
+    {label:'Target Customer Profile',sys:'You are a customer research specialist. Based on the org context, define 2-3 ideal customer personas. For each: name the segment, describe demographics and psychographics, list their top 3 pain points, and describe what success looks like for them.'},
+    {label:'Competitive Landscape',sys:'You are a competitive intelligence analyst. Identify the competitive landscape: direct competitors, indirect alternatives, and the white space this org can own. For each competitor category, list strengths and weaknesses. Conclude with a clear differentiation statement.'},
+    {label:'Go-to-Market Strategy',sys:'You are a GTM strategist. Outline a phased go-to-market plan: Phase 1 (first 90 days — early adopters, channels, messaging), Phase 2 (months 4-12 — scale and partnerships), Phase 3 (year 2+ — market expansion). Include specific channels and tactics for this org type and state.'},
+    {label:'Financial Framework',sys:'You are a financial planning advisor. Create a financial framework (not fabricated numbers): revenue model options appropriate for this org type, key cost categories to budget for, funding sources to pursue (grants, revenue, investment), and 3 financial milestones to hit in year 1. Use a table or bullet format.'},
+    {label:'90-Day Action Plan',sys:'You are an operations planner. Produce a detailed 90-day action plan to launch or accelerate this organization. Organize by month (Month 1, Month 2, Month 3). For each month list 5-7 specific, actionable bullet-point tasks. Priority: legal/structural first, then product/service, then market-facing.'},
+  ]},
   'app-launch-prep':{name:'App Launch Prep',icon:'🚀',desc:'Launch checklist → Press blurb → App store description',steps:[{label:'Launch Checklist',sys:"Create a launch checklist for this app/product. Include technical, marketing, legal, and community categories."},{label:'Press / Announcement Blurb',sys:"Write a 100-word press announcement for the app launch. Lead with user impact, not technical features."},{label:'App Store / Landing Page Description',sys:"Write a 150-word app description suitable for a landing page or app store. Focus on who it helps and how."}]},
 };
 
@@ -2135,7 +2334,23 @@ function openWFModal(key){
   document.getElementById('wfr-ctx').value='';
   const editBtn=document.querySelector('#mo-wf-run .btn.violet');
   if(editBtn)editBtn.style.display=key.startsWith('base_')?'none':'';
-  document.getElementById('wfr-steps').innerHTML=wf.steps.map((s,i)=>`
+  // Show biz plan config if applicable
+  const bpConfig=document.getElementById('biz-plan-config');
+  if(bpConfig){
+    const isBP=(key==='base_business-plan');
+    bpConfig.style.display=isBP?'block':'none';
+    if(isBP&&CFG.state){
+      const stateEl=document.getElementById('bp-state');
+      if(stateEl)stateEl.value=CFG.state;
+    }
+    if(isBP&&CFG.type){
+      const industryEl=document.getElementById('bp-industry');
+      if(industryEl&&CFG.type){
+        const map={nonprofit:'nonprofit',tech:'tech',health:'health',services:'services',retail:'retail',realestate:'realestate'};
+        if(map[CFG.type])industryEl.value=map[CFG.type];
+      }
+    }
+  }  document.getElementById('wfr-steps').innerHTML=wf.steps.map((s,i)=>`
     <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
       <div class="wfb-step-num">${i+1}</div>
       <div style="flex:1;">
@@ -2147,8 +2362,14 @@ function openWFModal(key){
 }
 
 function runFromModal(){
-  const ctx=document.getElementById('wfr-ctx')?.value||'';
+  let ctx=document.getElementById('wfr-ctx')?.value||'';
   const snap=document.getElementById('wfr-snapshot')?.checked;
+  // Inject biz plan config if shown
+  if(document.getElementById('biz-plan-config')?.style.display!=='none'){
+    const industry=document.getElementById('bp-industry')?.value||'';
+    const state=document.getElementById('bp-state')?.value||CFG.state||'';
+    if(industry||state){ctx=(ctx?ctx+'\n\n':'')+'INDUSTRY: '+industry+(state?'\nSTATE/REGION: '+state:'');}
+  }
   closeM('wf-run');
   if(snap)takeSnapshot('Pre-run: '+(getWFByKey(WFR_KEY)?.name||WFR_KEY));
   runWorkflowWithCtx(WFR_KEY,ctx);
@@ -2394,7 +2615,7 @@ async function runPipeline(extraCtx){
   if(btn1)btn1.disabled=false;if(btn2)btn2.disabled=false;
   document.getElementById('pdf-body').innerHTML='<pre style="white-space:pre-wrap;font-family:Georgia,serif;font-size:12px;color:#2d2d4a;">'+assembled+'</pre>';
   SESSION.pipes++;SESSION.drafts++;updateBadges();
-  vaultPush(wf.name,assembled,'Pipeline',wf.steps.map(s=>s.label));
+  vaultPush(wf.name,assembled,key==='base_business-plan'?'Business Plan':'Pipeline',wf.steps.map(s=>s.label));
   // Show critic summary if any flags
   if(criticLog&&criticLog.length){
     const critSummary=document.getElementById('pipe-body');
@@ -2403,7 +2624,7 @@ async function runPipeline(extraCtx){
       critSummary.textContent+=flagNote;
     }
   }
-  if(wf.requireApproval){
+  if(wf.requireApproval||key==='base_business-plan'){
     DELIVERABLES.push({id:'del'+Date.now(),title:wf.name+' Output',type:'Pipeline Output',status:'Pending Review',content:assembled,created:new Date().toISOString()});
     saveAll();renderDeliverables();updateBadges();
     toast('👁',wf.name+' held for approval in Deliverables');
@@ -3746,7 +3967,7 @@ async function testConfig(){
 // ════════════════════════════════════════════════════
 // UTILITIES
 // ════════════════════════════════════════════════════
-function V(v,el){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const vEl=document.getElementById('view-'+v);if(vEl)vEl.classList.add('active');document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));if(el)el.classList.add('active');const T={warroom:'⚡ War Room',workflows:'🔀 Workflows',social:'📣 Social Engine',outreach:'✉️ Outreach Builder',deliverables:'📋 Deliverables',grants:'🔭 Intel Hub',mail:'📬 Mail Hub',kb:'📚 Knowledge Base',hiring:'🤖 Hiring Hall',memory:'🧠 Long-Term Brain',prompts:'📝 Prompt Library',registry:'🗄 Task Registry',export:'📄 PDF Export',snapshots:'📸 Snapshots',vault:'🗃 Output Vault'};document.getElementById('page-title').textContent=T[v]||v;}
+function V(v,el){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));const vEl=document.getElementById('view-'+v);if(vEl)vEl.classList.add('active');document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));if(el)el.classList.add('active');const T={warroom:'⚡ War Room',workflows:'🔀 Workflows',social:'📣 Social Engine',outreach:'✉️ Outreach Builder',deliverables:'📋 Deliverables',grants:'🔭 Intel Hub',bizhealth:'🏥 Business Health',mail:'📬 Mail Hub',kb:'📚 Knowledge Base',hiring:'🤖 Hiring Hall',memory:'🧠 Long-Term Brain',prompts:'📝 Prompt Library',registry:'🗄 Task Registry',export:'📄 PDF Export',snapshots:'📸 Snapshots',vault:'🗃 Output Vault'};document.getElementById('page-title').textContent=T[v]||v;}
 
 function openPromptBuilderWithPrompt(i){
   const p=PROMPTS[i];if(!p)return;
@@ -3761,7 +3982,7 @@ function openM(id){
   if(id==='wf-run')populateChainSelect();
 }
 function closeM(id,e){if(!e||e.target===document.getElementById('mo-'+id))document.getElementById('mo-'+id)?.classList.remove('open');}
-function stab(btn,p){document.querySelectorAll('#mo-settings .tab').forEach(t=>t.classList.remove('active'));btn?.classList.add('active');['s-api','s-company','s-social','s-audiences','s-apps','s-urls','s-voice','s-appear'].forEach(x=>{const el=document.getElementById(x);if(el)el.style.display=x===p?'':'none';});}
+function stab(btn,p){document.querySelectorAll('#mo-settings .tab').forEach(t=>t.classList.remove('active'));btn?.classList.add('active');['s-api','s-company','s-social','s-audiences','s-apps','s-urls','s-voice','s-appear','s-remind'].forEach(x=>{const el=document.getElementById(x);if(el)el.style.display=x===p?'':'none';});}
 function hiTab(btn,id){document.querySelectorAll('#view-hiring .tab').forEach(t=>t.classList.remove('active'));btn?.classList.add('active');['hr','hdepts','hrec'].forEach(x=>document.getElementById('tc-'+x)?.classList.toggle('active',x===id));}
 function escHtml(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
@@ -3789,8 +4010,338 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function toast(icon,msg){document.getElementById('ti').textContent=icon;document.getElementById('tm').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500);}
 
 // ════════════════════════════════════════════════════
-// BOOT
+// BUSINESS HEALTH AUDIT
 // ════════════════════════════════════════════════════
+function bhTab(btn,id){
+  document.querySelectorAll('#view-bizhealth .tab').forEach(t=>t.classList.remove('active'));
+  btn?.classList.add('active');
+  ['bh-dash','bh-run','bh-history'].forEach(x=>document.getElementById('tc-'+x)?.classList.toggle('active',x===id));
+  if(id==='bh-history')renderBHHistory();
+}
+
+async function bhScrapeURL(){
+  const url=document.getElementById('bh-url')?.value.trim();
+  if(!url){toast('❌','Enter a URL first');return;}
+  const status=document.getElementById('bh-scrape-status');
+  if(status)status.textContent='Fetching…';
+  try{
+    const r=await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url));
+    const d=await r.json();
+    const text=(d.contents||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').substring(0,1200);
+    const docsEl=document.getElementById('bh-docs');
+    if(docsEl)docsEl.value=(docsEl.value?docsEl.value+'\n\n':'')+'[From '+url+']:\n'+text;
+    if(status)status.textContent='✅ Fetched and added to context';
+    // Also add to KB
+    KB.push({id:'kb'+Date.now(),name:'Website: '+url,content:text,tags:['BRAND_VOICE','STRATEGY'],type:'url',url});
+    saveAll();renderKBWithTags();updateBadges();
+  }catch(e){if(status)status.textContent='⚠️ Could not fetch — paste content manually';}
+}
+
+async function runBizHealthAudit(){
+  if(!CFG.groq){toast('🔑','Groq API key needed');return;}
+  const docs=document.getElementById('bh-docs')?.value.trim()||'';
+  const competitors=document.getElementById('bh-competitors')?.value.trim()||'';
+  const history=document.getElementById('bh-history-ctx')?.value.trim()||'';
+  const outEl=document.getElementById('bh-run-output');
+  outEl.style.display='block';
+  outEl.innerHTML='<div class="lbar" style="margin-bottom:10px;"></div><div style="font-size:11px;color:var(--t2);">Running 5-step Business Health Audit…</div>';
+
+  const HEALTH_STEPS=[
+    {label:'Brand & Content Audit',sys:'You are a brand strategist conducting a content audit. Review the business context provided and evaluate: (1) Brand voice consistency — is messaging clear and consistent? (2) Key messaging strengths. (3) Gaps or contradictions in how they present themselves. Use specific observations, not generic advice.'},
+    {label:'Mission Alignment Check',sys:'You are a strategic advisor. Evaluate how well this organization\'s activities and messaging align with their stated mission. Identify any drift, gaps, or contradictions. Be specific and constructive.'},
+    {label:'Competitive Position Analysis',sys:'You are a competitive intelligence analyst. Based on the business context and the listed competitors, evaluate: (1) Current competitive positioning, (2) Key differentiators vs competitors, (3) Vulnerabilities or gaps competitors could exploit. Be direct.'},
+    {label:'Operational Gap Analysis',sys:'You are an operations consultant. Based on the business context and phase, identify the top 5 operational gaps — things that are missing, under-resourced, or likely causing friction. Format as a numbered list with a brief explanation for each.'},
+    {label:'Priority Recommendations',sys:'You are a business advisor giving a final health report. Based on all the context, give: (1) A Health Score out of 10 with one-sentence rationale. (2) Top 5 priority actions ranked by impact — be specific and actionable, not generic. (3) One thing this business should stop doing immediately.'},
+  ];
+
+  const extraCtx=`EXISTING BUSINESS CONTEXT:\n${docs}\n\nCOMPETITORS: ${competitors||'Not specified'}\n\nBUSINESS HISTORY: ${history||'Not specified'}`;
+  const results=[];let prev='';
+
+  for(let i=0;i<HEALTH_STEPS.length;i++){
+    const step=HEALTH_STEPS[i];
+    const agent=AGENTS[i%Math.max(AGENTS.length,1)]||{id:'bh',name:'Health Auditor',color:'green',goal:'',backstory:''};
+    outEl.innerHTML='<div class="lbar" style="margin-bottom:10px;"></div><div style="font-size:11px;color:var(--t2);">Step '+(i+1)+' of '+HEALTH_STEPS.length+': '+step.label+'…</div>';
+    const userMsg=i===0
+      ?`Run a ${step.label} for ${CFG.org||'this organization'}.\n\n${extraCtx}`
+      :`Previous analysis:\n${prev.substring(0,600)}\n\nNow run: ${step.label} for ${CFG.org||'this organization'}.\n\n${extraCtx}`;
+    const{text}=await groq(step.sys,userMsg,700);
+    results.push(text);prev=text;
+  }
+
+  const assembled='BUSINESS HEALTH AUDIT — '+(CFG.org||'Organization')+'\n'+'═'.repeat(50)+'\n\n'+
+    HEALTH_STEPS.map((s,i)=>s.label.toUpperCase()+':\n'+results[i]).join('\n\n─────────────────\n\n');
+
+  outEl.innerHTML=`<div class="dcard">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:9.5px;font-family:var(--fm);text-transform:uppercase;letter-spacing:1px;color:var(--green);">🏥 Health Audit Complete</span>
+      <span class="chip green">✅ Done</span>
+    </div>
+    <div class="dbody" style="white-space:pre-wrap;font-size:11px;line-height:1.7;">${escHtml(assembled)}</div>
+    <div class="dacts" style="margin-top:10px;">
+      <button class="btn gold" onclick="navigator.clipboard.writeText(${JSON.stringify(assembled)}).then(()=>toast('📋','Copied'))">📋 Copy</button>
+      <button class="btn teal" onclick="saveBHResult(${JSON.stringify(assembled)})">💾 Save to Vault</button>
+    </div>
+  </div>`;
+
+  // Save and update dashboard
+  saveBHResult(assembled,true);
+}
+
+function saveBHResult(assembled,skipToast){
+  vaultPush('Health Audit — '+(CFG.org||'Organization'),assembled,'Health Audit',['Audit']);
+  if(!skipToast)toast('💾','Audit saved to Vault');
+  updateBHDashboard(assembled);
+  renderBHHistory();
+}
+
+function updateBHDashboard(assembled){
+  const empty=document.getElementById('bh-dashboard-empty');
+  const results=document.getElementById('bh-dashboard-results');
+  if(empty)empty.style.display='none';
+  if(results){results.style.display='block';
+    const scoreMatch=assembled.match(/Health Score[:\s]+(\d+)/i);
+    const score=scoreMatch?scoreMatch[1]:'—';
+    results.innerHTML=`<div class="sr sr5 mb">
+      <div class="sc green"><div class="sl">Health Score</div><div class="sv" style="color:var(--green);">${score}<span style="font-size:12px;">/10</span></div><div class="ss">latest audit</div></div>
+      <div class="sc teal"><div class="sl">Last Audit</div><div class="sv" style="color:var(--teal);font-size:14px;">${new Date().toLocaleDateString()}</div><div class="ss">today</div></div>
+      <div class="sc gold"><div class="sl">Sections</div><div class="sv" style="color:var(--gold);">5</div><div class="ss">reviewed</div></div>
+      <div class="sc violet"><div class="sl">Actions</div><div class="sv" style="color:var(--violet);">5</div><div class="ss">prioritized</div></div>
+      <div class="sc coral"><div class="sl">Gaps Found</div><div class="sv" style="color:var(--coral);">5</div><div class="ss">operational</div></div>
+    </div>
+    <div class="gc"><div class="ct" style="margin-bottom:10px;">📋 Latest Audit Summary</div>
+      <div style="font-size:11px;color:var(--t1);line-height:1.7;white-space:pre-wrap;">${escHtml(assembled.substring(0,800))}${assembled.length>800?'…':''}</div>
+      <button class="btn teal" style="margin-top:10px;" onclick="bhTab(document.querySelectorAll('#view-bizhealth .tab')[2],'bh-history')">View Full History →</button>
+    </div>`;
+  }
+}
+
+function renderBHHistory(){
+  const el=document.getElementById('bh-history-list');if(!el)return;
+  const audits=VAULT.filter(v=>v.type==='Health Audit');
+  if(!audits.length){el.innerHTML='<div style="font-size:11px;color:var(--t2);padding:20px;text-align:center;">No audits run yet. Go to Run Audit to start.</div>';return;}
+  el.innerHTML=audits.map(v=>`
+    <div class="gc mb" style="cursor:pointer;" onclick="this.querySelector('.bh-hist-body').style.display=this.querySelector('.bh-hist-body').style.display==='none'?'block':'none'">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div><div style="font-size:12px;font-weight:600;">${escHtml(v.title)}</div><div style="font-size:10px;color:var(--t2);font-family:var(--fm);">${new Date(v.ts).toLocaleString()}</div></div>
+        <span class="chip green">Health Audit</span>
+      </div>
+      <div class="bh-hist-body" style="display:none;margin-top:10px;font-size:11px;color:var(--t1);line-height:1.7;white-space:pre-wrap;">${escHtml((v.content||'').substring(0,1200))}${(v.content||'').length>1200?'…':''}</div>
+    </div>`).join('');
+}
+
+
+const LP_STEPS=[
+  {id:'problem',  label:'The Problem',      q:'What problem does your company or organization solve?',          ph:'e.g. Non-verbal individuals lack affordable, personalized communication tools.',hint:'Be specific — what pain exists in the world that you fix?'},
+  {id:'customer', label:'Your Customer',     q:'Who is your primary customer or beneficiary?',                   ph:'e.g. Families of non-verbal children ages 3-18, especially in under-resourced areas.',hint:'Describe the person whose life changes because of you.'},
+  {id:'diff',     label:'Your Edge',         q:'What makes your approach different from existing solutions?',    ph:'e.g. We use AI to personalize communication at a fraction of the cost of current AAC devices.',hint:'Why you, why now?'},
+  {id:'founder',  label:'Founder Info',      q:'Your name and your role or title?',                             ph:'e.g. John Lazzaro, Founder & Lead Developer',hint:'Used in all agent outputs and communications.'},
+  {id:'industry', label:'Industry & State',  q:'',ph:'',hint:''},  // rendered custom
+  {id:'revenue',  label:'Revenue Model',     q:'How does (or will) your organization generate revenue or funding?',ph:'e.g. Grant funding, SaaS subscriptions at $9.99/mo, donations, government contracts.',hint:'Even rough answers help agents give grounded advice.'},
+];
+let LP_STEP=0;
+let LP_DATA={};
+
+function openLaunchPad(){LP_STEP=0;LP_DATA={};openM('launchpad');renderLPStep();}
+
+function renderLPStep(){
+  const step=LP_STEPS[LP_STEP];
+  const dots=document.getElementById('lp-dots');
+  if(dots)dots.innerHTML=LP_STEPS.map((_,i)=>`<div style="height:3px;flex:1;border-radius:2px;background:${i<=LP_STEP?'var(--gold)':'var(--bg4)'};transition:background .3s;"></div>`).join('');
+  const body=document.getElementById('lp-step-body');if(!body)return;
+  document.getElementById('lp-back-btn').style.display=LP_STEP>0?'':'none';
+  const isLast=LP_STEP===LP_STEPS.length-1;
+  document.getElementById('lp-next-btn').textContent=isLast?'✦ Build My Workspace':'Next →';
+
+  if(step.id==='industry'){
+    body.innerHTML=`<div style="margin-bottom:6px;font-size:13px;font-weight:600;color:var(--t0);">Industry & Location</div>
+      <div style="font-size:11px;color:var(--t2);margin-bottom:14px;">Helps agents give market-specific, legally-aware advice.</div>
+      <div class="g2" style="gap:12px;">
+        <div class="fg"><label class="fl">Industry</label>
+          <select class="fsel" id="lp-industry">
+            <option value="nonprofit">Nonprofit / Social Impact</option><option value="tech">Technology / SaaS</option>
+            <option value="health">Healthcare / MedTech</option><option value="services">Professional Services</option>
+            <option value="retail">Retail / E-commerce</option><option value="realestate">Real Estate</option>
+            <option value="food">Food & Beverage</option><option value="education">Education / EdTech</option>
+            <option value="construction">Construction / Trades</option><option value="media">Media / Creative</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">State / Region</label>
+          <select class="fsel" id="lp-state">
+            <option value="Florida" selected>Florida</option>
+            <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option><option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option><option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option>
+          </select>
+        </div>
+      </div>`;
+    return;
+  }
+
+  body.innerHTML=`
+    <div style="margin-bottom:6px;font-size:13px;font-weight:600;color:var(--t0);">${escHtml(step.q)}</div>
+    <div style="font-size:10.5px;color:var(--t2);margin-bottom:12px;">${escHtml(step.hint)}</div>
+    <textarea class="fta" id="lp-input" style="min-height:90px;" placeholder="${escHtml(step.ph)}">${escHtml(LP_DATA[step.id]||'')}</textarea>
+    ${CFG.groq?`<button class="btn violet" style="margin-top:8px;width:100%;" onclick="lpAIAssist('${step.id}')">✦ AI Assist — draft this for me</button>`:''}
+    <div id="lp-assist-result" style="margin-top:8px;"></div>`;
+  setTimeout(()=>document.getElementById('lp-input')?.focus(),80);
+}
+
+async function lpAIAssist(stepId){
+  if(!CFG.groq){toast('🔑','Add Groq key in Settings first');return;}
+  const input=document.getElementById('lp-input')?.value.trim();
+  const el=document.getElementById('lp-assist-result');
+  el.innerHTML='<div class="lbar" style="margin-bottom:6px;"></div><div style="font-size:11px;color:var(--t2);">Drafting…</div>';
+  const prompts={
+    problem:'Draft a clear, compelling 1-2 sentence problem statement for a business/org with this rough idea: "'+input+'". Return ONLY the polished statement.',
+    customer:'Write a specific 1-2 sentence customer profile based on: "'+input+'". Be concrete about who they are and why they need help. Return ONLY the description.',
+    diff:'Write a crisp 1-2 sentence differentiation statement based on: "'+input+'". Lead with the unique mechanism. Return ONLY the statement.',
+    founder:'Based on "'+input+'", suggest a clean founder name + title format. Return ONLY the formatted name and title.',
+    revenue:'Based on "'+input+'", suggest 2-3 viable revenue/funding models in a single concise sentence. Return ONLY the suggestion.',
+  };
+  const{text}=await groq('You are a business writing assistant. Be concise, specific, and never generic.',prompts[stepId]||'Improve this: '+input,150);
+  el.innerHTML=`<div class="alert info" style="font-size:11px;margin-bottom:0;">${escHtml(text)}<br><button class="btn teal" style="margin-top:8px;font-size:10px;" onclick="document.getElementById('lp-input').value=${JSON.stringify(text)};document.getElementById('lp-assist-result').innerHTML='';">Use This</button></div>`;
+}
+
+function lpCollectStep(){
+  const step=LP_STEPS[LP_STEP];
+  if(step.id==='industry'){
+    LP_DATA.industry=document.getElementById('lp-industry')?.value||'other';
+    LP_DATA.state=document.getElementById('lp-state')?.value||'';
+  } else {
+    LP_DATA[step.id]=document.getElementById('lp-input')?.value.trim()||'';
+  }
+}
+
+function lpBack(){if(LP_STEP>0){lpCollectStep();LP_STEP--;renderLPStep();}}
+
+async function lpNext(){
+  lpCollectStep();
+  if(LP_STEP<LP_STEPS.length-1){LP_STEP++;renderLPStep();return;}
+  // Final step — build workspace
+  await lpBuildWorkspace();
+}
+
+async function lpBuildWorkspace(){
+  const btn=document.getElementById('lp-next-btn');btn.disabled=true;btn.textContent='Building…';
+  const body=document.getElementById('lp-step-body');
+  body.innerHTML='<div class="lbar" style="margin-bottom:12px;"></div><div style="font-size:12px;color:var(--t1);line-height:2;">✦ Drafting your mission statement…<br>✦ Creating starter agents…<br>✦ Configuring workspace…</div>';
+  // 1. AI-draft mission + voice from the collected answers
+  let mission=CFG.mission,voice=CFG.voice;
+  if(CFG.groq){
+    const ctx=`Problem: ${LP_DATA.problem}\nCustomer: ${LP_DATA.customer}\nDifferentiator: ${LP_DATA.diff}\nFounder: ${LP_DATA.founder}\nIndustry: ${LP_DATA.industry}\nState: ${LP_DATA.state}\nRevenue: ${LP_DATA.revenue}`;
+    const{text:mText}=await groq('You are a mission statement writer. Return ONLY a single sentence mission statement, under 25 words.',ctx,80);
+    mission=mText.replace(/"/g,'');
+    const{text:vText}=await groq('You are a brand voice coach. Based on this org context, write 2-3 sentences describing their ideal communication voice and tone. No bullet points, no intro.',ctx,120);
+    voice=vText;
+  }
+  // 2. Parse founder
+  const founderParts=LP_DATA.founder||'';
+  // 3. Write config
+  CFG={...CFG,
+    org:LP_DATA.founder?.split(',')[0]?.split(' ').slice(-1)[0]||'My Company',
+    founder:founderParts,
+    mission,
+    voice,
+    type:LP_DATA.industry||'other',
+    state:LP_DATA.state||CFG.state,
+    phase:'Pre-launch / Startup',
+  };
+  // 4. Create 3 starter agents
+  const starterAgents=[
+    {id:'ag_ops'+Date.now(),name:'Operations Lead',role:'Operations Lead',goal:'Manage day-to-day business operations, admin tasks, process documentation, and logistics for the organization.',backstory:'Experienced operations professional with a background in startup environments.',dept:'Operations',color:'gold'},
+    {id:'ag_gr'+Date.now()+'1',name:'Growth Strategist',role:'Growth Strategist',goal:'Drive marketing, outreach, community building, and partnerships. Always speaks in the founder\'s voice.',backstory:'Digital marketing and community growth specialist with nonprofit and startup experience.',dept:'Growth',color:'teal'},
+    {id:'ag_co'+Date.now()+'2',name:'Compliance Officer',role:'Compliance Officer',goal:'Ensure all communications, grants, and documents align with regulatory requirements, mission, and brand guidelines.',backstory:'Experienced in grant writing, regulatory compliance, and policy alignment for funded organizations.',dept:'Compliance',color:'violet'},
+  ];
+  AGENTS=[...AGENTS.filter(a=>!['Operations Lead','Growth Strategist','Compliance Officer'].includes(a.name)),...starterAgents];
+  saveAll();updateSidebar();updateCompletion();updateBadges();renderStack();renderRoster();populateWFSelects();
+  closeM('launchpad');
+  // 5. Prompt to run Business Plan
+  setTimeout(()=>{
+    toast('✅','Workspace built! Ready to generate your Business Plan.');
+    document.getElementById('task-prompt').value=`Generate a full business plan for this organization. Problem we solve: ${LP_DATA.problem}. Customer: ${LP_DATA.customer}. Differentiator: ${LP_DATA.diff}. Revenue model: ${LP_DATA.revenue}.`;
+    openWFModal('base_business-plan');
+  },500);
+}
+
+
+let REMINDERS=[]; // [{id,wfKey,label,intervalDays,lastRun}]
+let _activeReminder=null;
+
+function loadReminders(){REMINDERS=ST.get('reminders')||[];}
+function saveReminders(){ST.set('reminders',REMINDERS);}
+
+function renderReminderList(){
+  const el=document.getElementById('remind-list');if(!el)return;
+  if(!REMINDERS.length){el.innerHTML='<div style="font-size:11px;color:var(--t2);">No reminders set.</div>';return;}
+  el.innerHTML=REMINDERS.map((r,i)=>{
+    const wf=getWFByKey(r.wfKey);
+    const last=r.lastRun?new Date(r.lastRun).toLocaleDateString():'Never';
+    return`<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg3);border:1px solid var(--b1);border-radius:var(--r);">
+      <div style="flex:1;">
+        <div style="font-size:11px;font-weight:600;color:var(--t0);">${escHtml(r.label||wf?.name||r.wfKey)}</div>
+        <div style="font-size:9.5px;color:var(--t2);font-family:var(--fm);">Every ${r.intervalDays}d · Last run: ${last}</div>
+      </div>
+      <button class="ico-btn d" onclick="deleteReminder(${i})">🗑</button>
+    </div>`;
+  }).join('');
+  // also populate the wf select in add-reminder form
+  const sel=document.getElementById('rem-wf-sel');
+  if(sel){
+    const templates=Object.keys(BASE_WORKFLOWS).map(k=>`<option value="base_${k}">${BASE_WORKFLOWS[k].name}</option>`).join('');
+    const custom=CUSTOM_WF.map(w=>`<option value="cust_${w.id}">${w.name}</option>`).join('');
+    sel.innerHTML=templates+custom;
+  }
+}
+
+function addReminder(){
+  const wfKey=document.getElementById('rem-wf-sel')?.value;
+  const intervalDays=parseInt(document.getElementById('rem-interval')?.value||'7');
+  const label=document.getElementById('rem-label')?.value.trim();
+  if(!wfKey){toast('❌','Select a workflow');return;}
+  REMINDERS.push({id:'rem'+Date.now(),wfKey,label,intervalDays,lastRun:null});
+  saveReminders();renderReminderList();
+  document.getElementById('rem-label').value='';
+  toast('✅','Reminder added');
+}
+
+function deleteReminder(i){
+  REMINDERS.splice(i,1);saveReminders();renderReminderList();
+  toast('🗑','Reminder removed');
+}
+
+function checkReminders(){
+  const now=Date.now();
+  for(const r of REMINDERS){
+    const last=r.lastRun?new Date(r.lastRun).getTime():0;
+    const due=now-last>r.intervalDays*86400000;
+    if(due){
+      _activeReminder=r;
+      const wf=getWFByKey(r.wfKey);
+      const daysAgo=r.lastRun?Math.floor((now-last)/86400000):null;
+      const msg=`<strong>${escHtml(r.label||wf?.name||'Workflow')}</strong> is due${daysAgo?` — last run ${daysAgo} day${daysAgo!==1?'s':''} ago`:''}`;
+      const banner=document.getElementById('reminder-banner');
+      const msgEl=document.getElementById('reminder-msg');
+      if(banner&&msgEl){msgEl.innerHTML=msg;banner.style.display='flex';break;}
+    }
+  }
+}
+
+function dismissReminder(){
+  if(_activeReminder){_activeReminder.lastRun=new Date().toISOString();saveReminders();}
+  const banner=document.getElementById('reminder-banner');
+  if(banner)banner.style.display='none';
+  _activeReminder=null;
+}
+
+function runReminderWorkflow(){
+  if(!_activeReminder)return;
+  _activeReminder.lastRun=new Date().toISOString();
+  saveReminders();
+  const key=_activeReminder.wfKey;
+  dismissReminder();
+  runWorkflow(key);
+}
+
+
 function boot(){
   // Apply saved theme immediately
   const savedTheme=localStorage.getItem('fiq5_theme')||'dark';
@@ -3799,7 +4350,7 @@ function boot(){
   let ws=getWS();
   if(!ws.length){const id='ws_'+Date.now();ws=[{id,name:'My Workspace',created:new Date().toISOString()}];setWS(ws);CWS=id;setActiveWS(id);}
   else{CWS=getActiveWS()||ws[0].id;}
-  renderWSBar();loadWSData();
+  renderWSBar();loadWSData();loadReminders();
   // First time: show splash
   if(!localStorage.getItem('fiq5_seen')){document.getElementById('splash-ov').classList.add('open');localStorage.setItem('fiq5_seen','1');}
   // Init GitHub scanner defaults
@@ -3812,8 +4363,30 @@ function boot(){
   }
   // Check for URL-triggered workflow
   checkURLTrigger();
+  // Check reminders (after short delay so UI is ready)
+  setTimeout(checkReminders,800);
 }
 boot();
 </script>
-</body>
-</html>
+<!-- ═══════════════════ LAUNCH PAD MODAL ═══════════════════ -->
+<div class="mo" id="mo-launchpad" onclick="closeM('launchpad',event)">
+<div class="md wide" style="max-height:90vh;">
+  <div class="md-hdr">
+    <div>
+      <div class="md-title">🚀 Launch Pad — Start From Zero</div>
+      <div style="font-size:10px;color:var(--t2);">Answer 6 quick questions. AI builds your workspace.</div>
+    </div>
+    <button class="ico-btn" onclick="closeM('launchpad')">✕</button>
+  </div>
+  <!-- Progress -->
+  <div style="display:flex;gap:4px;margin-bottom:18px;" id="lp-dots"></div>
+  <!-- Step container -->
+  <div id="lp-step-body" style="min-height:220px;"></div>
+  <div style="display:flex;gap:8px;margin-top:16px;">
+    <button class="btn" id="lp-back-btn" onclick="lpBack()" style="display:none;">← Back</button>
+    <button class="run-btn" id="lp-next-btn" onclick="lpNext()" style="flex:1;">Next →</button>
+  </div>
+</div>
+</div>
+
+
