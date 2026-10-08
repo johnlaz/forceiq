@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" role="img" aria-label="ForceIQ architecture: a browser app with localStorage, calling Groq, Grants.gov, GitHub and optional Gmail directly">
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#2dd4bf"/></marker></defs>
+<rect width="1200" height="420" rx="20" fill="#0b0e1f"/>
+<g font-family="Segoe UI,Helvetica,Arial,sans-serif" fill="#f0f0f8">
+<text x="40" y="52" font-size="24" font-weight="700">Architecture — no backend</text>
+<rect x="40" y="80" width="560" height="300" rx="16" fill="#101328" stroke="#c9a227" stroke-opacity=".6"/>
+<text x="64" y="112" font-size="17" font-weight="700" fill="#c9a227">Your browser / installed PWA</text>
+<rect x="64" y="132" width="250" height="90" rx="12" fill="#161a33"/><text x="82" y="162" font-size="16" font-weight="700">app/index.html</text><text x="82" y="186" font-size="14" fill="#b0b3cc">UI · agents · pipelines · KB</text><text x="82" y="206" font-size="14" fill="#b0b3cc">single file, vanilla JS</text>
+<rect x="334" y="132" width="246" height="90" rx="12" fill="#161a33"/><text x="352" y="162" font-size="16" font-weight="700">sw.js</text><text x="352" y="186" font-size="14" fill="#b0b3cc">offline shell · versioned cache</text><text x="352" y="206" font-size="14" fill="#b0b3cc">AI &amp; API calls bypass it</text>
+<rect x="64" y="242" width="516" height="110" rx="12" fill="#161a33"/><text x="82" y="272" font-size="16" font-weight="700">localStorage (per workspace)</text><text x="82" y="298" font-size="14" fill="#b0b3cc">settings · agents · memories · KB · deliverables · API keys</text><text x="82" y="322" font-size="14" fill="#b0b3cc">Exports redact keys. Nothing syncs anywhere.</text>
+<g stroke="#2dd4bf" stroke-width="2.5" fill="none" marker-end="url(#a)"><path d="M600 160 H700"/><path d="M600 214 H700"/><path d="M600 268 H700"/><path d="M600 322 H700"/></g>
+<g font-size="15"><rect x="704" y="132" width="456" height="56" rx="12" fill="#13162a" stroke="#2dd4bf" stroke-opacity=".5"/><text x="724" y="156" font-weight="700">Groq</text><text x="724" y="177" fill="#b0b3cc" font-size="13.5">Chat completions + live model list (your key)</text>
+<rect x="704" y="196" width="456" height="56" rx="12" fill="#13162a" stroke="#2dd4bf" stroke-opacity=".5"/><text x="724" y="220" font-weight="700">Grants.gov</text><text x="724" y="241" fill="#b0b3cc" font-size="13.5">Live federal opportunities, no auth</text>
+<rect x="704" y="260" width="456" height="56" rx="12" fill="#13162a" stroke="#2dd4bf" stroke-opacity=".5"/><text x="724" y="284" font-weight="700">GitHub API</text><text x="724" y="305" fill="#b0b3cc" font-size="13.5">Optional: scan a repo into the knowledge base</text>
+<rect x="704" y="324" width="456" height="56" rx="12" fill="#13162a" stroke="#7b7f9c" stroke-opacity=".6" stroke-dasharray="6 5"/><text x="724" y="348" font-weight="700">Gmail / IMAP bridge / URL proxy</text><text x="724" y="369" fill="#b0b3cc" font-size="13.5">Optional, desktop-oriented integrations</text></g>
+</g></svg>

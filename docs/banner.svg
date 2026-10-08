@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-label="ForceIQ — AI Workforce Suite">
+<defs><linearGradient id="g" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#c9a227"/><stop offset="1" stop-color="#2dd4bf"/></linearGradient>
+<radialGradient id="b" cx=".2" cy=".2" r="1.1"><stop offset="0" stop-color="#171b3d"/><stop offset="1" stop-color="#060810"/></radialGradient></defs>
+<rect width="1200" height="300" rx="22" fill="url(#b)"/>
+<g transform="translate(70 62) scale(.36)">
+<g fill="none" stroke="url(#g)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"><path d="M156 322 L226 264 L296 296 L366 186"/></g>
+<circle cx="156" cy="322" r="30" fill="#c9a227"/><circle cx="226" cy="264" r="30" fill="#8fb64a"/><circle cx="296" cy="296" r="30" fill="#5cc5a0"/><circle cx="366" cy="186" r="42" fill="#2dd4bf"/><circle cx="366" cy="186" r="16" fill="#060810"/></g>
+<text x="300" y="132" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="74" font-weight="800" fill="url(#g)">ForceIQ</text>
+<text x="302" y="176" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="26" fill="#f0f0f8">Your AI workforce, running in your browser.</text>
+<text x="302" y="218" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="19" fill="#9a9db8">Agents · Pipelines · Live grants · Social · Outreach — local-first, bring your own Groq key</text>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="How a ForceIQ pipeline works: context feeds three agents in sequence, producing a deliverable">
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#c9a227"/></marker></defs>
+<rect width="1200" height="360" rx="20" fill="#0b0e1f"/>
+<g font-family="Segoe UI,Helvetica,Arial,sans-serif" fill="#f0f0f8">
+<text x="40" y="52" font-size="24" font-weight="700">How a pipeline runs</text>
+<rect x="40" y="86" width="230" height="190" rx="14" fill="#13162a" stroke="#2dd4bf" stroke-opacity=".6"/>
+<text x="62" y="118" font-size="18" font-weight="700" fill="#2dd4bf">Your context</text>
+<text x="62" y="148" font-size="15" fill="#b0b3cc">Company &amp; voice</text><text x="62" y="172" font-size="15" fill="#b0b3cc">Long-term brain</text><text x="62" y="196" font-size="15" fill="#b0b3cc">Knowledge base chunks</text><text x="62" y="220" font-size="15" fill="#b0b3cc">Audiences &amp; products</text>
+<text x="62" y="252" font-size="13" fill="#7b7f9c">Injected into every call</text>
+<path d="M270 181 H318" stroke="#c9a227" stroke-width="3" marker-end="url(#a)"/>
+<rect x="320" y="106" width="200" height="150" rx="14" fill="#13162a" stroke="#c9a227" stroke-opacity=".7"/>
+<circle cx="350" cy="136" r="14" fill="#c9a227"/><text x="344" y="142" font-size="16" font-weight="700" fill="#060810">1</text>
+<text x="374" y="142" font-size="17" font-weight="700">Agent 1</text><text x="342" y="176" font-size="15" fill="#b0b3cc">Summarise the</text><text x="342" y="198" font-size="15" fill="#b0b3cc">organisation</text>
+<path d="M520 181 H568" stroke="#c9a227" stroke-width="3" marker-end="url(#a)"/>
+<rect x="570" y="106" width="200" height="150" rx="14" fill="#13162a" stroke="#c9a227" stroke-opacity=".7"/>
+<circle cx="600" cy="136" r="14" fill="#8fb64a"/><text x="594" y="142" font-size="16" font-weight="700" fill="#060810">2</text>
+<text x="624" y="142" font-size="17" font-weight="700">Agent 2</text><text x="592" y="176" font-size="15" fill="#b0b3cc">Reads step 1, drafts</text><text x="592" y="198" font-size="15" fill="#b0b3cc">the strategy</text>
+<path d="M770 181 H818" stroke="#c9a227" stroke-width="3" marker-end="url(#a)"/>
+<rect x="820" y="106" width="190" height="150" rx="14" fill="#13162a" stroke="#c9a227" stroke-opacity=".7"/>
+<circle cx="850" cy="136" r="14" fill="#2dd4bf"/><text x="844" y="142" font-size="16" font-weight="700" fill="#060810">3</text>
+<text x="874" y="142" font-size="17" font-weight="700">Agent 3</text><text x="842" y="176" font-size="15" fill="#b0b3cc">Reads 1 + 2, checks</text><text x="842" y="198" font-size="15" fill="#b0b3cc">and finishes</text>
+<path d="M1010 181 H1058" stroke="#c9a227" stroke-width="3" marker-end="url(#a)"/>
+<rect x="1060" y="130" width="110" height="102" rx="14" fill="#13162a" stroke="#4ade80" stroke-opacity=".7"/>
+<text x="1082" y="170" font-size="17" font-weight="700" fill="#4ade80">Result</text><text x="1075" y="196" font-size="14" fill="#b0b3cc">Vault · PDF</text><text x="1075" y="216" font-size="14" fill="#b0b3cc">Copy · Brain</text>
+<text x="40" y="326" font-size="14" fill="#7b7f9c">Each handoff is a real model call — nothing runs in parallel guesses you have to stitch together.</text>
+</g></svg>
