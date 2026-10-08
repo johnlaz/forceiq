@@ -1,0 +1,22 @@
+{
+  "id": "./",
+  "name": "ForceIQ — AI Workforce Suite",
+  "short_name": "ForceIQ",
+  "description": "Local-first AI workforce: agents, pipelines, social engine, outreach builder and live grant discovery. Bring your own Groq key.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#060810",
+  "theme_color": "#060810",
+  "categories": ["productivity", "business"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "screenshots": [
+    { "src": "shot-narrow-1.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "Quick actions on the War Room" },
+    { "src": "shot-narrow-2.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "A pipeline handing work between agents" },
+    { "src": "shot-wide.png", "sizes": "1920x1080", "type": "image/png", "form_factor": "wide", "label": "War Room on desktop" }
+  ]
+}
